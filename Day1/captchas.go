@@ -4,8 +4,8 @@ import (
 	"container/ring"
 	"fmt"
 	"io/ioutil"
-	"strconv"
 	"log"
+	"strconv"
 )
 
 func main() {
