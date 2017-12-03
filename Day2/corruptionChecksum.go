@@ -54,6 +54,7 @@ func partTwo(input string) {
 				vv, _ := strconv.Atoi(curRow[i])
 				if n % vv == 0 {
 					total += n / vv
+					break
 				}
 			}
 		}
