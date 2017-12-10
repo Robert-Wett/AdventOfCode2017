@@ -3,17 +3,13 @@ package main
 import (
 	"container/ring"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"strconv"
+
+	utils "github.com/Robert-Wett/AdventOfCode2017/helpers"
 )
 
 func main() {
-	content, err := ioutil.ReadFile("./input.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-	var input = string(content)
+	input := utils.GetInput("./input.txt")
 
 	partOne(input)
 	partTwo(input)
