@@ -20,7 +20,7 @@ func partTwo(input string) {
 	values := initRegisters(input)
 	for _, line := range strings.Split(input, "\n") {
 		symbol, op, amount, condSymbol, condOp, condAmount := parseLine(line)
-		if evalCondition(condSymbol, condOp, condAmount, &values) == true {
+		if evalCondition(condSymbol, condOp, condAmount, &values) {
 			incDec(symbol, op, amount, &values)
 			for _, value := range values {
 				if value > highestValue {
@@ -37,17 +37,18 @@ func partOne(input string) {
 	values := initRegisters(input)
 	for _, line := range strings.Split(input, "\n") {
 		symbol, op, amount, condSymbol, condOp, condAmount := parseLine(line)
-		if evalCondition(condSymbol, condOp, condAmount, &values) == true {
+		if evalCondition(condSymbol, condOp, condAmount, &values) {
 			incDec(symbol, op, amount, &values)
 		}
 	}
 
-	highest := 0
+	var highest int
 	for _, value := range values {
 		if value >= highest {
 			highest = value
 		}
 	}
+
 	fmt.Println(highest)
 }
 
@@ -84,18 +85,14 @@ func evalCondition(symbol, op string, amount int, values *map[string]int) bool {
 	case "!=":
 		return (*values)[symbol] != amount
 	default:
-		fmt.Println("PANIC PANIC PANIC")
 		return false
 	}
 }
 
 func parseLine(line string) (string, string, int, string, string, int) {
-	hi := strings.Split(line, " ")
-	var symbol = hi[0]
-	var op = hi[1]
-	amt, _ := strconv.Atoi(hi[2])
-	var condSymbol = hi[4]
-	var condOp = hi[5]
-	condAmount, _ := strconv.Atoi(hi[6])
+	pieces := strings.Split(line, " ")
+	var symbol, op, condSymbol, condOp = pieces[0], pieces[1], pieces[4], pieces[5]
+	amt, _ := strconv.Atoi(pieces[2])
+	condAmount, _ := strconv.Atoi(pieces[6])
 	return symbol, op, amt, condSymbol, condOp, condAmount
 }
