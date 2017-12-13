@@ -12,13 +12,87 @@ type Node struct {
 	Name     string
 	Weight   int
 	Children []*Node
+	Parent   *Node
 }
+type Graph map[string]*Node
 
-// mfohmwu (344) -> dniumoe, uuimn, ewiugad, vkkds, bqpycy
-// fwudfax (27)
 func main() {
 	input := utils.GetInput("./input.txt")
 	partOne(input)
+	partTwo(input)
+}
+
+func partTwo(input string) {
+	g := make(Graph)
+	for _, line := range strings.Split(input, "\n") {
+		n := newNodeNoKids(line)
+		g[n.Name] = n
+	}
+	addChildren(input, &g)
+	//head := g.getHead()
+	//for _, child := range head.Children {
+	//for _, child := range g["ggxgmci"].Children {
+	//for _, child := range g["anygv"].Children {
+	// Note: This is a mess, basically manually ran this until I found
+	// that 'fabacam' was the mis-weighted node
+	for _, child := range g["fabacam"].Children {
+
+		fmt.Println(child.Name, child.Weight)
+		var hi []*Node
+		traverse(child, map[string]bool{}, &hi)
+		total := 0
+		for _, x := range hi {
+			total += x.Weight
+		}
+		fmt.Println(total)
+	}
+}
+
+func traverse(n *Node, visited map[string]bool, todo *[]*Node) {
+	(*todo) = append((*todo), n)
+	for _, c := range n.Children {
+		traverse(c, visited, todo)
+	}
+}
+
+func (g *Graph) getHead() *Node {
+	for _, v := range *g {
+		if v.Parent == nil {
+			return v
+		}
+	}
+	return nil
+}
+
+func parseLine(line string) (string, int, []string) {
+	weight, _ := strconv.Atoi((line[strings.Index(line, "(")+1 : strings.Index(line, ")")]))
+	name := line[:strings.Index(line, " ")]
+	var children []string
+	if strings.Contains(line, "->") {
+		c := strings.Split(line[strings.Index(line, ">")+2:], ", ")
+		for _, v := range c {
+			children = append(children, v)
+		}
+	}
+	return name, weight, children
+}
+
+func addChildren(input string, g *Graph) {
+	for _, line := range strings.Split(input, "\n") {
+		name, _, children := parseLine(line)
+		if len(children) > 0 {
+			for _, child := range children {
+				(*g)[name].Children = append((*g)[name].Children, (*g)[child])
+				(*g)[child].Parent = (*g)[name]
+			}
+		}
+	}
+}
+
+func newNodeNoKids(e string) *Node {
+	name, weight, _ := parseLine(e)
+	n := &Node{Name: name, Weight: weight}
+	return n
 }
 
 func partOne(input string) {
@@ -46,26 +120,12 @@ func partOne(input string) {
 }
 
 func newNode(e string) *Node {
-	weight, _ := strconv.Atoi((e[strings.Index(e, "(")+1 : strings.Index(e, ")")]))
-	name := e[:strings.Index(e, " ")]
+	name, weight, children := parseLine(e)
 	n := &Node{Name: name, Weight: weight}
-	if strings.Contains(e, "->") {
-		children := strings.Split(e[strings.Index(e, ">")+2:], ", ")
-		for _, v := range children {
-			n.Children = append(n.Children, &Node{Name: v})
+	if len(children) > 0 {
+		for _, c := range children {
+			n.Children = append(n.Children, &Node{Name: c})
 		}
 	}
 	return n
-}
-
-func (n *Node) getChildren() []string {
-	var c []string
-	for _, n := range n.Children {
-		c = append(c, n.Name)
-	}
-	return c
-}
-
-func (n *Node) toString() string {
-	return fmt.Sprintf("Name:%s, Weight: %d, Children: %s", n.Name, n.Weight, strings.Join(n.getChildren(), ", "))
 }
