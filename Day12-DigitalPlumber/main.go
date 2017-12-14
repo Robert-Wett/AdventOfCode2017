@@ -11,6 +11,31 @@ import (
 func main() {
 	input := helpers.GetInput("./input.txt")
 	partOne(input)
+	partTwo(input)
+}
+
+func partTwo(input string) {
+	programMap := make(programs)
+	for _, line := range strings.Split(input, "\n") {
+		addNode(line, &programMap)
+	}
+	for _, line := range strings.Split(input, "\n") {
+		addChildren(line, &programMap)
+	}
+
+	var below []*program
+	visited := make(map[int]bool)
+
+	var count int
+	for _, v := range programMap {
+		if visited[v.Value] {
+			continue
+		}
+		traverse(v, &below, &visited, &programMap)
+		count++
+	}
+
+	fmt.Println(count)
 }
 
 func partOne(input string) {
