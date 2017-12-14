@@ -1,42 +1,73 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/Robert-Wett/AdventOfCode2017/helpers"
 )
 
 func main() {
-	var input = `0 <-> 2
-1 <-> 1
-2 <-> 0, 3, 4
-3 <-> 2, 4
-4 <-> 2, 3, 6
-5 <-> 6
-6 <-> 4, 5`
+	input := helpers.GetInput("./input.txt")
+	partOne(input)
+}
 
+func partOne(input string) {
 	programMap := make(programs)
 	for _, line := range strings.Split(input, "\n") {
-		addEntry(line, &programMap)
+		addNode(line, &programMap)
 	}
+	for _, line := range strings.Split(input, "\n") {
+		addChildren(line, &programMap)
+	}
+
+	var below []*program
+	visited := make(map[int]bool)
+	traverse(programMap.getProgram(0), &below, &visited, &programMap)
+
+	fmt.Println(len(visited))
 
 }
 
-func traverse(p *program, numBelow *[]*program, programMap *programs) {
-	(*numBelow) = append((*numBelow), p)
-	for _, c := range p.Children {
-		//childNode := (*prog)
-		traverse((*programMap)[c], numBelow, programMap)
+func (p *programs) getProgram(num int) *program {
+	return (*p)[num]
+}
+
+func traverse(p *program, numBelow *[]*program, v *map[int]bool, programMap *programs) {
+	if !(*v)[p.Value] {
+		(*v)[p.Value] = true
+		for _, c := range p.Children {
+			traverse(c, numBelow, v, programMap)
+		}
+		(*numBelow) = append((*numBelow), p)
 	}
 }
 
-type programs map[int]program
+type programs map[int]*program
 
 type program struct {
-	Value, Parent int
-	Children      []int
+	Value    int
+	Parent   *program
+	Children []*program
 }
 
-func addEntry(inputLine string, p *programs) {
+func addNode(inputLine string, p *programs) {
+	nodeVal, _ := parseLine(inputLine)
+	(*p)[nodeVal] = &program{Value: nodeVal}
+}
+
+func addChildren(inputLine string, p *programs) {
+	nodeVal, children := parseLine(inputLine)
+	parent := (*p)[nodeVal]
+	for _, intVal := range children {
+		child := (*p)[intVal]
+		child.Parent = parent
+		parent.Children = append(parent.Children, child)
+	}
+}
+
+func parseLine(inputLine string) (int, []int) {
 	line := strings.Split(inputLine, "<->")
 	nodeVal, _ := strconv.Atoi(strings.Trim(line[0], " "))
 	var children []int
@@ -47,21 +78,7 @@ func addEntry(inputLine string, p *programs) {
 		}
 	}
 
-	ourNode := program{Value: nodeVal, Children: children}
-
-	if node, ok := (*p)[nodeVal]; ok {
-		// Add children, set their parents
-		for _, cv := range children {
-			if !contains(cv, node.Children) {
-				node.Children = append(node.Children, cv)
-			}
-			if cNode, ok := (*p)[cv]; ok {
-				cNode.Parent = node.Value
-			}
-		}
-	} else {
-		(*p)[nodeVal] = ourNode
-	}
+	return nodeVal, children
 }
 
 func contains(in int, coll []int) bool {
