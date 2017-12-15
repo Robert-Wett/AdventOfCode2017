@@ -1,10 +1,9 @@
-def checkCaught(depth, pos):
-    position = pos + 1
-    if (position / depth) % 2 == 0:
-        idx = depth - (-position % depth) - 1
+def checkCaught(steps, depth):
+    steps = steps + 1
+    if (steps / depth) % 2 == 0:
+        idx = depth - (-steps % depth) - 1
     else:
-        idx = (depth - (position % depth)) - 1
-    print idx
+        idx = (depth - (steps % depth)) - 1
     return idx == 0
 
-print checkCaught(3, 0)
+print checkCaught(0, 3)

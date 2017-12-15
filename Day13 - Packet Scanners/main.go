@@ -9,8 +9,39 @@ import (
 )
 
 func main() {
-	partOne(helpers.GetInput("./input.txt"))
-	partTwoBrute(helpers.GetInput("./input.txt"))
+	//partOne(helpers.GetInput("./input.txt"))
+	partOne(helpers.GetInput("./sampleInput.txt"))
+	//partTwoBrute(helpers.GetInput("./input.txt"))
+	partTwo(helpers.GetInput("./input.txt"))
+}
+
+func partTwo(input string) {
+	m := newLayerMap(input)
+	var i int
+	var caught bool
+	var idx int
+	for preTicks := 0; ; preTicks++ {
+		if layer, ok := (*m)[i]; ok {
+			caught = isCaught(layer.depth, i+preTicks)
+			if !caught {
+				fmt.Println(preTicks)
+				break
+			}
+		}
+		i++
+	}
+	fmt.Println(idx)
+}
+
+func isCaught(depth, steps int) bool {
+	pos := steps + 1
+	var idx int
+	if (pos/depth)%2 == 0 {
+		idx = depth - (-pos % depth) - 1
+	} else {
+		idx = (depth - (pos % depth)) - 1
+	}
+	return idx == 0
 }
 
 func partTwoBrute(input string) {
@@ -45,6 +76,7 @@ func partOne(input string) {
 }
 
 func attemptPass(m *layerMap, p *packet) {
+	m.tick(2)
 	max := m.getMax()
 	for i := 0; i < max; i++ {
 		p.tick(m)
@@ -66,6 +98,7 @@ func (p *packet) tick(l *layerMap) {
 	if curLayer, ok := (*l)[p.idx]; ok {
 		// If the layer's scanner is at the top
 		if curLayer.idx == 0 {
+			fmt.Println("Caught at layer: ", curLayer.pos)
 			p.caught = append(p.caught, curLayer)
 		}
 	}
