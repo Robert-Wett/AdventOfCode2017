@@ -23,7 +23,6 @@ func partTwo(input string) {
 		addChildren(line, &programMap)
 	}
 
-	var below []*program
 	visited := make(map[int]bool)
 
 	var count int
@@ -31,7 +30,7 @@ func partTwo(input string) {
 		if visited[v.Value] {
 			continue
 		}
-		traverse(v, &below, &visited, &programMap)
+		traverse(v, &visited, &programMap)
 		count++
 	}
 
@@ -47,9 +46,8 @@ func partOne(input string) {
 		addChildren(line, &programMap)
 	}
 
-	var below []*program
 	visited := make(map[int]bool)
-	traverse(programMap.getProgram(0), &below, &visited, &programMap)
+	traverse(programMap.getProgram(0), &visited, &programMap)
 
 	fmt.Println(len(visited))
 
@@ -59,13 +57,12 @@ func (p *programs) getProgram(num int) *program {
 	return (*p)[num]
 }
 
-func traverse(p *program, numBelow *[]*program, v *map[int]bool, programMap *programs) {
+func traverse(p *program, v *map[int]bool, programMap *programs) {
 	if !(*v)[p.Value] {
 		(*v)[p.Value] = true
 		for _, c := range p.Children {
-			traverse(c, numBelow, v, programMap)
+			traverse(c, v, programMap)
 		}
-		(*numBelow) = append((*numBelow), p)
 	}
 }
 
