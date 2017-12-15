@@ -9,24 +9,44 @@ import (
 )
 
 func main() {
-	input := helpers.GetInput("./input.txt")
-	partOne(input)
+	partOne(helpers.GetInput("./input.txt"))
+	partTwo(helpers.GetInput("./input.txt"))
 }
+
+func partTwo(input string) {
+	var i int
+	m := newLayerMap(input)
+	for true {
+		m.zeroMap()
+		p := packet{}
+		if attemptPass(m, &p, i, false) {
+			fmt.Println(fmt.Sprintf("You had to wait %d picoseconds before crossing successfuly", i))
+			break
+		}
+		i++
+	}
+}
+
+//34124 too low, wtf?
 
 func partOne(input string) {
 	m := newLayerMap(input)
 	p := packet{}
-	_ = attemptPass(m, &p)
+	_ = attemptPass(m, &p, 0, true)
 }
 
-func attemptPass(m *layerMap, p *packet) bool {
-	for i := 0; i < m.getMax(); i++ {
+func attemptPass(m *layerMap, p *packet, numPreTicks int, verbose bool) bool {
+	m.tick(numPreTicks)
+	max := m.getMax()
+	for i := 0; i < max; i++ {
 		p.tick(m)
-		m.tick()
+		m.tick(1)
 	}
 	severity := p.caught.calculateSeverity()
 	if severity > 0 {
-		fmt.Println(fmt.Sprintf("You were caught %d times, with a severity of %d", len(p.caught), severity))
+		if verbose {
+			fmt.Println(fmt.Sprintf("You were caught %d times, with a severity of %d", len(p.caught), severity))
+		}
 		return false
 	}
 
@@ -61,9 +81,19 @@ func newLayerMap(input string) *layerMap {
 	return &lm
 }
 
-func (l *layerMap) tick() {
+func (l *layerMap) zeroMap() {
 	for _, layer := range *l {
-		(*layer).tick()
+		layer.idx = 0
+		layer.dir = 0
+	}
+}
+
+func (l *layerMap) tick(num int) {
+	if num <= 0 {
+		return
+	}
+	for _, layer := range *l {
+		(*layer).tick(num)
 	}
 }
 
@@ -75,7 +105,7 @@ func (l *layerMap) getMax() int {
 		}
 	}
 
-	return highest
+	return highest + 1
 }
 
 type layers []*layer
@@ -96,27 +126,29 @@ type layer struct {
 	dir   int
 }
 
-func (l *layer) tick() {
-	// Zero or Single lengthed layers don't change state
-	if l.depth-1 <= 0 {
-		return
-	}
-
-	if l.dir == 0 { // Down
-		if l.idx+1 > l.depth-1 {
-			// Change direction
-			l.dir = 1
-			l.idx--
-		} else {
-			l.idx++
+func (l *layer) tick(num int) {
+	for i := 0; i < num; i++ {
+		// Zero or Single lengthed layers don't change state
+		if l.depth-1 <= 0 {
+			return
 		}
-	} else { // Up
-		if l.idx-1 < 0 {
-			// Change direction
-			l.dir = 0
-			l.idx++
-		} else {
-			l.idx--
+
+		if l.dir == 0 { // Down
+			if l.idx+1 > l.depth-1 {
+				// Change direction
+				l.dir = 1
+				l.idx--
+			} else {
+				l.idx++
+			}
+		} else { // Up
+			if l.idx-1 < 0 {
+				// Change direction
+				l.dir = 0
+				l.idx++
+			} else {
+				l.idx--
+			}
 		}
 	}
 }
