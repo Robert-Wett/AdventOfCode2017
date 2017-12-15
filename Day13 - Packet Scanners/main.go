@@ -10,16 +10,16 @@ import (
 
 func main() {
 	partOne(helpers.GetInput("./input.txt"))
-	partTwo(helpers.GetInput("./input.txt"))
+	partTwoBrute(helpers.GetInput("./input.txt"))
 }
 
-func partTwo(input string) {
+func partTwoBrute(input string) {
 	var i int
 	m := newLayerMap(input)
 	for true {
 		m.zeroMap()
 		p := packet{}
-		if attemptPass(m, &p, i, false) {
+		if attemptPassWithWait(m, &p, i) {
 			fmt.Println(fmt.Sprintf("You had to wait %d picoseconds before crossing successfuly", i))
 			break
 		}
@@ -27,16 +27,24 @@ func partTwo(input string) {
 	}
 }
 
-//34124 too low, wtf?
+func attemptPassWithWait(m *layerMap, p *packet, numPreTicks int) bool {
+	m.tick(numPreTicks)
+	max := m.getMax()
+	for i := 0; i < max; i++ {
+		p.tick(m)
+		m.tick(1)
+	}
+
+	return len(p.caught) == 0
+}
 
 func partOne(input string) {
 	m := newLayerMap(input)
 	p := packet{}
-	_ = attemptPass(m, &p, 0, true)
+	attemptPass(m, &p)
 }
 
-func attemptPass(m *layerMap, p *packet, numPreTicks int, verbose bool) bool {
-	m.tick(numPreTicks)
+func attemptPass(m *layerMap, p *packet) {
 	max := m.getMax()
 	for i := 0; i < max; i++ {
 		p.tick(m)
@@ -44,13 +52,8 @@ func attemptPass(m *layerMap, p *packet, numPreTicks int, verbose bool) bool {
 	}
 	severity := p.caught.calculateSeverity()
 	if severity > 0 {
-		if verbose {
-			fmt.Println(fmt.Sprintf("You were caught %d times, with a severity of %d", len(p.caught), severity))
-		}
-		return false
+		fmt.Println(fmt.Sprintf("You were caught %d times, with a severity of %d", len(p.caught), severity))
 	}
-
-	return true
 }
 
 type packet struct {
