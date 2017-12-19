@@ -12,8 +12,32 @@ import (
 
 func main() {
 	partOne(helpers.GetInput("./input.txt"))
+	partTwo(helpers.GetInput("./input.txt"))
 }
 
+func partTwo(input string) {
+	p := program{[]byte{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p'}}
+	// This value represents the number of times we ACTUALLY run the commands.
+	// This algorithm repeats it's value every 63rd cycle.
+	var max = 1000000000 % 63
+	for i := 0; i < max; i++ {
+		for _, c := range parseInstructions(input) {
+			switch c.command {
+			case "s":
+				p.spin(c.sNum)
+			case "p":
+				p.partner(c.pFirst, c.pSecond)
+			case "x":
+				p.exchange(c.eFirst, c.eSecond)
+			default:
+				log.Fatal("Huh?")
+			}
+		}
+
+	}
+	fmt.Println(p.toString())
+
+}
 func partOne(input string) {
 
 	p := program{[]byte{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p'}}
@@ -91,7 +115,6 @@ type program struct {
 }
 
 func (p *program) toString() string {
-	fmt.Println(p.Str)
 	var stringed string
 	for _, program := range p.Str {
 		stringed += string(program)
