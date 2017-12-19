@@ -3,6 +3,8 @@ package helpers
 import (
 	"io/ioutil"
 	"log"
+	"os"
+	"os/exec"
 )
 
 func GetInput(fp string) string {
@@ -12,4 +14,10 @@ func GetInput(fp string) string {
 	}
 
 	return string(content)
+}
+
+func ClearScreen() {
+	cmd := exec.Command("clear")
+	cmd.Stdout = os.Stdout
+	cmd.Run()
 }

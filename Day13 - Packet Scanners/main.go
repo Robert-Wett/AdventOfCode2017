@@ -10,7 +10,21 @@ import (
 
 func main() {
 	partOne(helpers.GetInput("./input.txt"))
-	partTwoBrute(helpers.GetInput("./input.txt"))
+	partTwo(helpers.GetInput("./input.txt"))
+}
+
+func partTwo(input string) {
+	m := newLayerMap(input)
+	for ticks := 0; ; ticks++ {
+		if passed, caughtIdx := m.safePass(ticks); passed {
+			helpers.ClearScreen()
+			fmt.Println(fmt.Sprintf("You've successfully passed after waiting %d picoseconds!", ticks))
+			return
+		} else if (ticks % 3333) == 0 {
+			helpers.ClearScreen()
+			fmt.Println(fmt.Sprintf("You were caught by level #%d, ATTEMPT: %d", caughtIdx, ticks))
+		}
+	}
 }
 
 func partTwoBrute(input string) {
@@ -46,7 +60,7 @@ func partOne(input string) {
 
 func attemptPass(m *layerMap, p *packet) {
 	max := m.getMax()
-	for i := 0; i < max; i++ {
+	for i := 0; i <= max; i++ {
 		p.tick(m)
 		m.tick(1)
 	}
@@ -66,6 +80,7 @@ func (p *packet) tick(l *layerMap) {
 	if curLayer, ok := (*l)[p.idx]; ok {
 		// If the layer's scanner is at the top
 		if curLayer.idx == 0 {
+			fmt.Println(curLayer.isCaught(p.idx))
 			p.caught = append(p.caught, curLayer)
 		}
 	}
@@ -82,6 +97,16 @@ func newLayerMap(input string) *layerMap {
 	}
 
 	return &lm
+}
+
+func (l *layerMap) safePass(ticks int) (bool, int) {
+	for _, layer := range *l {
+		caught := layer.isCaught(ticks)
+		if caught {
+			return false, layer.pos
+		}
+	}
+	return true, -1
 }
 
 func (l *layerMap) zeroMap() {
@@ -108,7 +133,7 @@ func (l *layerMap) getMax() int {
 		}
 	}
 
-	return highest + 1
+	return highest
 }
 
 type layers []*layer
@@ -154,6 +179,14 @@ func (l *layer) tick(num int) {
 			}
 		}
 	}
+}
+
+func (l *layer) isCaught(steps int) bool {
+	offset := (steps + l.pos) % ((l.depth - 1) * 2)
+	if offset > l.depth-1 {
+		return 2*(l.depth-1)-offset == 0
+	}
+	return offset == 0
 }
 
 func parseLine(line string) (int, int) {
