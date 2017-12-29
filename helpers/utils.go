@@ -125,3 +125,11 @@ func reverse(a []int) []int {
 	}
 	return a
 }
+func IndexOf(needle int, haystack []int) int {
+	for i, v := range haystack {
+		if v == needle {
+			return i
+		}
+	}
+	return -1
+}
